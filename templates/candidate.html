@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "admin_layout.html" %}
 {% block body %}
   {% if session.logged_in %}
 
@@ -6,7 +6,7 @@
     <ul>
       <li>email: {{ candidate.email }}</li>
       <li>link: <a href="/quiz/{{ candidate.url_hash }}">link to quiz</a></li>
-      <li>start time: {{ candidate.start_time }}
+      <li>start time: {{ candidate.start_time | moment }}
     </ul>
 
     <h3>Assigned Problems</h3>

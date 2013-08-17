@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+
+    <h2>Quiz for {{candidate.name}}</h2>
+
+    The following will evaluate your coding and technical problem-solving abilities. You will be given {{ candidate.problems | length }} problem descriptions, and up to 3 hours to solve the problems. Depending on your ability, it may not take the full time, but it is probably wise to set aside at least 2 uninterrupted hours to complete the problem set. You may of course use the internet to reference language features and APIs, but please do your own work.
+    <p/>
+    You may write your solutions in Java, C, C++, or Python. Use the editor or IDE and coding environment that you are most comfortable with. Define functions and classes as needed, using names that make sense.
+    <p/>
+    Your solutions will be tested against sample data including edge and corner cases, so be sure to think about these cases when writing and testing your code. It is not required that you submit your test cases/code with the solution (but it is OK to if you'd like). Keep in mind that efficiency and clarity matter but that an inefficient solution is better than no solution.
+    <p/>
+
+    Started at: {{ candidate.start_time | moment }}
+
+    {% for problem in candidate.problems %}
+
+      <hr/>
+      <h3>{{ problem.name }}</h3>
+      {{ problem.content | markdown  }}
+
+    {% endfor %}
+    
+
+  {% endif %}
+{% endblock %}

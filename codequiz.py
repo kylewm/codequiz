@@ -1,7 +1,7 @@
-import os, string, random, re
+import os, string, random, re, datetime
 
 from flask import Flask, request, session, redirect, render_template, flash,\
-  url_for, _app_ctx_stack, abort
+  url_for, _app_ctx_stack, abort, Markup
 from flaskext.markdown import Markdown
 
 from collections import namedtuple
@@ -183,6 +183,35 @@ def logout():
     flash('You were logged out')
     return redirect(url_for('login'))
 
+
+@app.route('/quiz/<string:url_hash>')
+def quiz_view(url_hash):
+    candidate = db_session.query(Candidate).\
+        filter(Candidate.url_hash == url_hash).\
+        one()
+        
+    action = request.args.get('action')
+    if not candidate.start_time and action == 'start':
+        candidate.start_time = datetime.datetime.utcnow()
+        db_session.commit()
+
+
+    if candidate.start_time:
+        return render_template('quiz.html', candidate=candidate)
+    else:
+        return render_template('quiz_intro.html', candidate=candidate)
+
+@app.template_filter('moment')    
+def moment_filter(ts):
+    print 'apply moment filter to: {}'.format(ts)
+    ts_str = ts.strftime("%Y-%m-%dT%H:%M:%S Z")
+    print 'converted to string: {}'.format(ts_str)
+    return Markup('''
+<script>
+var mo = moment("{}");
+document.write(mo.format("LLL") + ", " + mo.fromNow());
+</script>'''.\
+                      format(ts_str))
 
 
 if __name__ == "__main__":
