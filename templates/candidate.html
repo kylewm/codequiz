@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+
+    <h2>{{ candidate.name }}</h2>
+    <ul>
+      <li>email: {{ candidate.email }}</li>
+      <li>link: <a href="/quiz/{{ candidate.url_hash }}">link to quiz</a></li>
+      <li>start time: {{ candidate.start_time }}
+    </ul>
+
+    <h3>Assigned Problems</h3>
+    <ul>
+      {% for problem in candidate.problems %}
+      <li>{{ problem.name }} <a href=" {{ url_for('problem_view', problem_id=problem.id, action='view') }}">view</a></li>
+      {% endfor %}
+    </ul>
+
+    <a href=" {{ url_for('candidate_view', candidate_id=candidate.id, action='edit') }}">edit</a>
+
+    <h3>Submissions</h3>
+    {% for submission in candidate.submissions %}
+    
+    <hr/>
+    <b>submission time:</b> {{ submission.time }}
+    
+    <pre>{{submission.content}}</pre>
+    
+    {% endfor %}
+    
+
+  {% endif %}
+{% endblock %}

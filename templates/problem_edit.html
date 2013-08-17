@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+
+    <h2>{{ problem.name }}</h2>
+
+    <form method="POST">
+      <input name="name" value="{{ problem.name }}" /><p/>
+      <textarea style="width: 100%; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;" name="content" rows="20">{{ problem.content }}</textarea><p/>
+
+      <input type="submit"/>
+    </form>
+
+  {% endif %}
+
+{% endblock %}

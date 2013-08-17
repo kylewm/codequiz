@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+
+    <h2>{{ candidate.name }}</h2>
+
+    <form method="POST">
+      <label>name:</label> <input name="name" value="{{ candidate.name }}" /><br/>
+      <label>email:</label> <input name="email" value="{{ candidate.email }}"/><br/>
+
+      Assigned problems:<br/>
+      <ul>
+        {% for problem in all_problems %}
+          <li><input type="checkbox" name="problem" value="{{ problem.id }}" checked="{{ problem in candidate.problems }}">{{ problem.name }}</li>
+        {% endfor %}
+
+        <input type="submit"/>
+    </form>
+    
+  {% endif %}
+  
+{% endblock %}

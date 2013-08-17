@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+
+    <h2>{{ problem.name }}</h2>
+    <div class="content">
+      {{ problem.content | markdown }}
+    </div>
+
+
+    <a href="{{ url_for('problem_view', problem_id=problem.id, action='edit' )}}">edit</a>
+  {% endif %}
+
+{% endblock %}

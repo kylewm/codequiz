@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+
+    <h2>Problems</h2>
+    <ul>
+      {% for problem in problems %}
+        <li>
+          {{ problem.name }} 
+          <a href="{{ url_for('problem_view', problem_id=problem.id, action='view' )}}">view</a> 
+          <a href="{{ url_for('problem_view', problem_id=problem.id, action='edit' )}}">edit</a> 
+          <a href="{{ url_for('problem_view', problem_id=problem.id, action='delete' )}}">delete</a> 
+        </li>
+      {% endfor %}
+    </ul>
+    
+    <a href="{{ url_for('problem_view', problem_id='new', action='edit' )}}">new problem</a>
+
+    <hr/>
+
+    <h2>Candidates</h2>
+    <ul>
+      {% for candidate in candidates %}
+        <li>
+          {{ candidate.name }} &lt;{{ candidate.email }}&gt;
+          <a href="/quiz/{{ candidate.url_hash }}">link to quiz</a><br/>
+          <a href="{{ url_for('candidate_view', candidate_id=candidate.id, action='view') }}">view</a>
+          <a href="{{ url_for('candidate_view', candidate_id=candidate.id, action='edit') }}">edit</a>
+          <a href="{{ url_for('candidate_view', candidate_id=candidate.id, action='delete') }}">delete</a>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('candidate_view', candidate_id='new', action='edit') }}">new candidate</a>
+  {% endif %}
+
+{% endblock %}
