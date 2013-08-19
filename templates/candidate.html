@@ -7,27 +7,35 @@
       <li>email: {{ candidate.email }}</li>
       <li>link: <a href="/quiz/{{ candidate.url_hash }}">link to quiz</a></li>
       <li>start time: {{ candidate.start_time | moment }}
-    </ul>
-
-    <h3>Assigned Problems</h3>
-    <ul>
-      {% for problem in candidate.problems %}
-      <li>{{ problem.name }} <a href=" {{ url_for('problem_view', problem_id=problem.id, action='view') }}">view</a></li>
-      {% endfor %}
-    </ul>
-
+    </ul>    
     <a href=" {{ url_for('candidate_view', candidate_id=candidate.id, action='edit') }}">edit</a>
 
-    <h3>Submissions</h3>
-    {% for submission in candidate.submissions %}
-    
-    <hr/>
-    <b>submission time:</b> {{ submission.time }}
-    
-    <pre>{{submission.content}}</pre>
-    
+    <h3>Assigned Problems</h3>
+    {% for problem in candidate.problems %}
+      {% if not loop.first %} <hr/> {% endif %}
+      <h4>{{ problem.name }} <a href=" {{ url_for('problem_view', problem_id=problem.id, action='view') }}">view</a></h4>
+      <p />
+      {% for submission in candidate.submissions %}
+        {% if submission.problem_id == problem.id %}
+          <div class="submission">
+            <a href="#" onclick="toggleShowHide('submission-body-{{ loop.index }}'); return false;">submitted: {{ submission.time | moment }}</a>
+            <div id="submission-body-{{ loop.index }}" style="display:none;">
+              <pre>{{submission.content}}</pre>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+      
     {% endfor %}
     
-
   {% endif %}
+
+
+<script>
+  function toggleShowHide(id) {
+      var element = document.getElementById(id)
+      element.style.display = element.style.display == 'none' ? 'block' : 'none';
+  }
+</script>
+
 {% endblock %}

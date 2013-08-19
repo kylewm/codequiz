@@ -1,4 +1,4 @@
-import os, string, random, re, datetime
+import os, string, random, re, datetime, textwrap
 
 from flask import Flask, request, session, redirect, render_template, flash,\
   url_for, _app_ctx_stack, abort, Markup
@@ -50,6 +50,9 @@ class Submission(Base):
 
     candidate_id = Column(Integer, ForeignKey('candidates.id'))
     candidate = relationship('Candidate', backref=backref('submissions', order_by=id))
+    problem_id  = Column(Integer, ForeignKey('problems.id'))
+    problem = relationship('Problem')
+
 
 
 db_url = os.environ["DATABASE_URL"]
@@ -183,20 +186,38 @@ def logout():
     flash('You were logged out')
     return redirect(url_for('login'))
 
+@app.route('/quiz_submit', methods=['POST'])
+def quiz_submit():
+    candidate_id = request.form['candidate']
+    problem_id = request.form['problem']
 
-@app.route('/quiz/<string:url_hash>')
+    candidate = db_session.query(Candidate).\
+        filter(Candidate.id == candidate_id).\
+        one()
+    
+    content = request.form['content']
+    if content:
+        sub = Submission(candidate_id=candidate.id, problem_id=problem_id,
+                         content=content, time=datetime.datetime.utcnow())
+        db_session.add(sub)
+        db_session.commit()
+        return redirect(url_for('quiz_view', url_hash=candidate.url_hash))
+
+
+@app.route('/quiz/<string:url_hash>', methods=['GET', 'POST'])
 def quiz_view(url_hash):
     candidate = db_session.query(Candidate).\
         filter(Candidate.url_hash == url_hash).\
         one()
-        
+    
     action = request.args.get('action')
     if not candidate.start_time and action == 'start':
         candidate.start_time = datetime.datetime.utcnow()
         db_session.commit()
+        return redirect(url_for('quiz_view', url_hash=url_hash))
+        
 
-
-    if candidate.start_time:
+    if candidate.start_time:        
         return render_template('quiz.html', candidate=candidate)
     else:
         return render_template('quiz_intro.html', candidate=candidate)
@@ -205,13 +226,11 @@ def quiz_view(url_hash):
 def moment_filter(ts):
     print 'apply moment filter to: {}'.format(ts)
     ts_str = ts.strftime("%Y-%m-%dT%H:%M:%S Z")
-    print 'converted to string: {}'.format(ts_str)
-    return Markup('''
-<script>
-var mo = moment("{}");
-document.write(mo.format("LLL") + ", " + mo.fromNow());
-</script>'''.\
-                      format(ts_str))
+    return Markup(textwrap.dedent(
+            '''<script>
+                 var mo = moment("{}");
+                 document.write(mo.format("LLL") + ", " + mo.fromNow());
+               </script>'''.format(ts_str)))
 
 
 if __name__ == "__main__":

@@ -4,11 +4,33 @@
 
     <h2>Quiz for {{candidate.name}}</h2>
 
-    The following will evaluate your coding and technical problem-solving abilities. You will be given {{ candidate.problems | length }} problem descriptions, and up to 3 hours to solve the problems. Depending on your ability, it may not take the full time, but it is probably wise to set aside at least 2 uninterrupted hours to complete the problem set. You may of course use the internet to reference language features and APIs, but please do your own work.
+    The following will evaluate your coding and technical
+    problem-solving abilities. You will be given {{ candidate.problems | length }}
+    problem descriptions, and up to 3 hours to solve the
+    problems. Depending on your ability, it may not take the full
+    time, but it is probably wise to set aside at least 2
+    uninterrupted hours to complete the problem set. You may of course
+    use the internet to reference language features and APIs, but
+    please do your own work.
+
     <p/>
-    You may write your solutions in Java, C, C++, or Python. Use the editor or IDE and coding environment that you are most comfortable with. Define functions and classes as needed, using names that make sense.
+
+    You may write your solutions in Java, C, C++, or Python. Use the
+    editor or IDE and coding environment that you are most comfortable
+    with. Define functions and classes as needed, using names that
+    make sense. When you have completed a solution, copy and paste it
+    into the text box below the problem description. You may submit
+    as many times as you want within the time limit.
+
     <p/>
-    Your solutions will be tested against sample data including edge and corner cases, so be sure to think about these cases when writing and testing your code. It is not required that you submit your test cases/code with the solution (but it is OK to if you'd like). Keep in mind that efficiency and clarity matter but that an inefficient solution is better than no solution.
+
+    Your solutions will be tested against sample data including edge
+    and corner cases, so be sure to think about these cases when
+    writing and testing your code. It is not required that you submit
+    your test cases/code with the solution (but it is OK to if you'd
+    like). Keep in mind that efficiency and clarity matter but that an
+    inefficient solution is better than no solution.
+
     <p/>
 
     Started at: {{ candidate.start_time | moment }}
@@ -19,8 +41,15 @@
       <h3>{{ problem.name }}</h3>
       {{ problem.content | markdown  }}
 
+
+      <form method="POST" action="{{ url_for('quiz_submit')}}">
+        <input type="hidden" name="candidate" value="{{ candidate.id }}">
+        <input type="hidden" name="problem" value="{{ problem.id }}">
+        <textarea name ="content" rows="20"></textarea><p/>
+        <input type="submit"/>
+      </form>
+
     {% endfor %}
     
-
   {% endif %}
 {% endblock %}
