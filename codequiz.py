@@ -56,7 +56,7 @@ class Submission(db.Model):
 
 
 def init_db():
-    db.create_all(db_engine)
+    db.create_all()
 
 
 
