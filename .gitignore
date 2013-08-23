@@ -1,3 +1,2 @@
-database-url.txt
 *.pyc
-codequiz.cfg
+.env
