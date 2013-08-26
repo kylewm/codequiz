@@ -214,7 +214,10 @@ def quiz_view(url_hash):
 
 @app.template_filter('moment')    
 def moment_filter(ts):
-    print 'apply moment filter to: {}'.format(ts)
+    if not ts:
+        return ""
+
+    #print 'apply moment filter to: {}'.format(ts)
     ts_str = ts.strftime("%Y-%m-%dT%H:%M:%S Z")
     return Markup(textwrap.dedent(
             '''<script>
