@@ -1,13 +1,13 @@
-import os, string, random, re, datetime, textwrap
-
-from flask.ext.sqlalchemy import SQLAlchemy
+import os, string, random, re, datetime
+from textwrap import dedent
 
 from flask import Flask, request, session, redirect, render_template, flash,\
   url_for, _app_ctx_stack, abort, Markup
+
 from flaskext.markdown import Markdown
+from flask.ext.sqlalchemy import SQLAlchemy
 
-from collections import namedtuple
-
+from postmark import PMMail
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
@@ -15,14 +15,18 @@ app.config['DEBUG'] = os.environ.get('DATABASE_URL')
 app.config['USERNAME'] = os.environ.get('USERNAME')
 app.config['PASSWORD'] = os.environ.get('PASSWORD')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
-Markdown(app)
+app.config['POSTMARK_API_KEY'] = os.environ.get('POSTMARK_API_KEY')
+app.config['POSTMARK_SENDER'] = os.environ.get('POSTMARK_SENDER')
+
+markdown = Markdown(app)
 
 db = SQLAlchemy(app)
+
+
 
 candidate_problems = db.Table('candidate_problems', db.Model.metadata,
                               db.Column('candidate_id', db.Integer, db.ForeignKey('candidates.id')),
                               db.Column('problem_id', db.Integer, db.ForeignKey('problems.id')))
-
     
 class Candidate(db.Model):
     __tablename__ = 'candidates'
@@ -178,6 +182,7 @@ def logout():
     flash('You were logged out')
     return redirect(url_for('login'))
 
+
 @app.route('/quiz_submit', methods=['POST'])
 def quiz_submit():
     candidate_id = request.form['candidate']
@@ -186,6 +191,10 @@ def quiz_submit():
     candidate = Candidate.query.\
         filter(Candidate.id == candidate_id).\
         one()
+
+    problem = Problem.query.\
+        filter(Problem.id == problem_id).\
+        one()
     
     content = request.form['content']
     if content:
@@ -193,6 +202,29 @@ def quiz_submit():
                          content=content, time=datetime.datetime.utcnow())
         db.session.add(sub)
         db.session.commit()
+
+        # notify via email
+        text_template = dedent("""Submission from: {}
+                               Problem: {}
+                               At: {}
+                               --------------------------------------------------------------------------------
+                               {}""")
+        html_template = dedent("""<html>
+                               Submission from <b>{}</b><br>
+                               Problem: <b>{}</b><br>
+                               At: <b>{}</b>
+                               <hr>
+                               <pre>{}</pre>
+                               </html>""") 
+        time_str = format_timestamp(sub.time)
+        send_email(candidate, "Submission from {}, {}".format(candidate.name, problem.name),
+                   text_template.format(candidate.name, problem.name,
+                                        time_str, sub.content),
+                   html_template.format(candidate.name, problem.name,
+                                        time_str, sub.content))
+
+        flash("Submitted solution for {}".format(problem.name))
+
         return redirect(url_for('quiz_view', url_hash=candidate.url_hash))
 
 
@@ -206,6 +238,21 @@ def quiz_view(url_hash):
     if not candidate.start_time and action == 'start':
         candidate.start_time = datetime.datetime.utcnow()
         db.session.commit()
+
+        text_template = dedent("""Quiz started: {}
+                               At: {}""")
+
+        html_template = dedent("""<html>
+                               Quiz started by: <b>{}</b><br>
+                               At: <b>{}</b>
+                               </html>""")
+
+        time_str = format_timestamp(candidate.start_time)
+
+        send_email(candidate, "Quiz started {} at {}".format(candidate.name, time_str),
+                   text_template.format(candidate.name, time_str),
+                   html_template.format(candidate.name, time_str))
+
         return redirect(url_for('quiz_view', url_hash=url_hash))
         
 
@@ -214,18 +261,34 @@ def quiz_view(url_hash):
     else:
         return render_template('quiz_intro.html', candidate=candidate)
 
+
+def format_timestamp(ts):
+    return ts.strftime("%Y-%m-%dT%H:%M:%S Z")
+
+
 @app.template_filter('moment')    
 def moment_filter(ts):
     if not ts:
         return ""
 
     #print 'apply moment filter to: {}'.format(ts)
-    ts_str = ts.strftime("%Y-%m-%dT%H:%M:%S Z")
-    return Markup(textwrap.dedent(
-            '''<script>
-                 var mo = moment("{}");
-                 document.write(mo.format("LLL") + ", " + mo.fromNow());
-               </script>'''.format(ts_str)))
+    ts_str = format_timestamp(ts)
+    return Markup(dedent(
+        '''<script>
+            var mo = moment("{}");
+            document.write(mo.format("LLL") + ", " + mo.fromNow());
+           </script>'''.format(ts_str)))
+
+
+def send_email(candidate, subject, text_body, html_body):
+    if candidate.notify_emails:
+        msg = PMMail(api_key = app.config['POSTMARK_API_KEY'],
+                     subject = subject,
+                     sender = app.config['POSTMARK_SENDER'],
+                     to = candidate.notify_emails,
+                     text_body = text_body,
+                     html_body = html_body)
+        msg.send()
 
 
 if __name__ == "__main__":
