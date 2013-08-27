@@ -20,8 +20,8 @@ Markdown(app)
 db = SQLAlchemy(app)
 
 candidate_problems = db.Table('candidate_problems', db.Model.metadata,
-                           db.Column('candidate_id', db.Integer, db.ForeignKey('candidates.id')),
-                           db.Column('problem_id', db.Integer, db.ForeignKey('problems.id')))
+                              db.Column('candidate_id', db.Integer, db.ForeignKey('candidates.id')),
+                              db.Column('problem_id', db.Integer, db.ForeignKey('problems.id')))
 
     
 class Candidate(db.Model):
@@ -29,6 +29,7 @@ class Candidate(db.Model):
     id = db.Column(db.Integer, db.Sequence('candidate_id_seq'), primary_key=True)
     name = db.Column(db.String)
     email = db.Column(db.String)
+    notify_emails = db.Column(db.String)
     start_time = db.Column(db.DateTime)
     url_hash = db.Column(db.String)
     problems = db.relationship('Problem', secondary=candidate_problems, backref='candidates')
@@ -130,6 +131,7 @@ def candidate_view(candidate_id):
         if request.method == 'POST':
             candidate.name = request.form['name']
             candidate.email = request.form['email']
+            candidate.notify_emails = request.form['notify_emails']
             candidate.problems = []
             problem_ids = request.form.getlist('problem')
             for problem_id in problem_ids:

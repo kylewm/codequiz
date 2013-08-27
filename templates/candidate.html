@@ -5,6 +5,7 @@
     <h2>{{ candidate.name }}</h2>
     <ul>
       <li>email: {{ candidate.email }}</li>
+      <li>send results to: {{ candidate.notify_emails }}</li>
       <li>link: <a href="/quiz/{{ candidate.url_hash }}">link to quiz</a></li>
       <li>start time: {{ candidate.start_time | moment }}
     </ul>    
