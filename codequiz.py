@@ -11,7 +11,7 @@ from postmark import PMMail
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
-app.config['DEBUG'] = os.environ.get('DATABASE_URL')
+app.config['DEBUG'] = os.environ.get('DEBUG')
 app.config['USERNAME'] = os.environ.get('USERNAME')
 app.config['PASSWORD'] = os.environ.get('PASSWORD')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
@@ -26,7 +26,8 @@ db = SQLAlchemy(app)
 
 candidate_problems = db.Table('candidate_problems', db.Model.metadata,
                               db.Column('candidate_id', db.Integer, db.ForeignKey('candidates.id')),
-                              db.Column('problem_id', db.Integer, db.ForeignKey('problems.id')))
+                              db.Column('problem_id', db.Integer, db.ForeignKey('problems.id')),
+                              db.Column('position', db.Integer))
     
 class Candidate(db.Model):
     __tablename__ = 'candidates'
@@ -36,7 +37,9 @@ class Candidate(db.Model):
     notify_emails = db.Column(db.String)
     start_time = db.Column(db.DateTime)
     url_hash = db.Column(db.String)
-    problems = db.relationship('Problem', secondary=candidate_problems, backref='candidates')
+    problems = db.relationship('Problem', secondary=candidate_problems,
+                               order_by=candidate_problems.columns.position, 
+                               backref='candidates')
 
 
 class Problem(db.Model):
