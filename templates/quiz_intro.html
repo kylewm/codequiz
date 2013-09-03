@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 {% block body %}
-  {% if session.logged_in %}
 
     <h2>Quiz for {{candidate.name}}</h2>
 
@@ -38,5 +37,4 @@
     <a href="{{url_for('quiz_view', url_hash=candidate.url_hash, action='start')}}">Begin Quiz</a>    
     
 
-  {% endif %}
 {% endblock %}

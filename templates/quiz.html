@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 {% block body %}
-  {% if session.logged_in %}
 
     <h2>Quiz for {{candidate.name}}</h2>
 
@@ -51,5 +50,4 @@
 
     {% endfor %}
     
-  {% endif %}
 {% endblock %}
