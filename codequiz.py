@@ -20,7 +20,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['POSTMARK_API_KEY'] = os.environ.get('POSTMARK_API_KEY')
 app.config['POSTMARK_SENDER'] = os.environ.get('POSTMARK_SENDER')
 
-markdown = Markdown(app)
+markdown = Markdown(app,extensions=['tables'])
 
 db = SQLAlchemy(app)
 
@@ -42,7 +42,7 @@ class Candidate(db.Model):
                                backref='candidates')
 
     def __repr__(self):
-        return "candidate:{}".format(self.name)
+        return "candidate:{}".format(self.name or "??")
 
 
 class Problem(db.Model):
@@ -53,7 +53,7 @@ class Problem(db.Model):
     content = db.Column(db.Text)
 
     def __repr__(self):
-        return "problem:{}".format(self.name)
+        return "problem:{}".format(self.name or "??")
 
 
 class Submission(db.Model):
@@ -70,7 +70,8 @@ class Submission(db.Model):
 
 
     def __repr__(self):
-        return "submission:{}->{}".format(self.candidate.name, self.problem.name)
+        return "submission:{}->{}".format(self.candidate.name if self.candidate else "??",
+                                          self.problem.name if self.problem else "??")
 
 
 admin = Admin(app, url="/admin2")
@@ -79,9 +80,8 @@ admin.add_view(ModelView(Problem, db.session))
 admin.add_view(ModelView(Submission, db.session))
 
 def init_db():
+    db.drop_all()
     db.create_all()
-
-
 
 @app.route('/admin')
 def admin():
