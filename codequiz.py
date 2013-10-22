@@ -6,6 +6,8 @@ from flask import Flask, request, session, redirect, render_template, flash,\
 
 from flaskext.markdown import Markdown
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.admin import Admin
+from flask.ext.admin.contrib.sqla import ModelView
 
 from postmark import PMMail
 
@@ -21,8 +23,6 @@ app.config['POSTMARK_SENDER'] = os.environ.get('POSTMARK_SENDER')
 markdown = Markdown(app)
 
 db = SQLAlchemy(app)
-
-
 
 candidate_problems = db.Table('candidate_problems', db.Model.metadata,
                               db.Column('candidate_id', db.Integer, db.ForeignKey('candidates.id')),
@@ -41,6 +41,9 @@ class Candidate(db.Model):
                                order_by=candidate_problems.columns.position, 
                                backref='candidates')
 
+    def __repr__(self):
+        return "candidate:{}".format(self.name)
+
 
 class Problem(db.Model):
     __tablename__ = 'problems'
@@ -48,6 +51,9 @@ class Problem(db.Model):
     id = db.Column(db.Integer, db.Sequence('problem_id_seq'), primary_key=True)
     name = db.Column(db.String)
     content = db.Column(db.Text)
+
+    def __repr__(self):
+        return "problem:{}".format(self.name)
 
 
 class Submission(db.Model):
@@ -62,6 +68,15 @@ class Submission(db.Model):
     problem_id  = db.Column(db.Integer, db.ForeignKey('problems.id'))
     problem = db.relationship('Problem')
 
+
+    def __repr__(self):
+        return "submission:{}->{}".format(self.candidate.name, self.problem.name)
+
+
+admin = Admin(app, url="/admin2")
+admin.add_view(ModelView(Candidate, db.session))
+admin.add_view(ModelView(Problem, db.session))
+admin.add_view(ModelView(Submission, db.session))
 
 def init_db():
     db.create_all()
