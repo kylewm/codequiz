@@ -1,5 +1,27 @@
 {% extends "admin_layout.html" %}
+
+{% block head %}
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css"/>
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    
+    <script>
+      $(function() {
+      $("#availableProblems").children("li").draggable({
+        connectToSortable: "#assignedProblems",
+        helper: "clone",
+        scroll: true
+      }); 
+      $("#assignedProblems").sortable({
+         scroll: true,
+       }).disableSelection();
+      });
+    </script>
+
+{% endblock %}
+
 {% block body %}
+
   {% if session.logged_in %}
 
     <h2>{{ candidate.name }}</h2>
@@ -9,15 +31,27 @@
       <label>email:</label> <input name="email" value="{{ candidate.email }}"/><br/>
       <label>send results to:</label> <input name="notify_emails" value="{{ candidate.notify_emails }}"/><br/>
 
-      Assigned problems:<br/>
-      <ul>
-        {% for problem in all_problems %}
-          <li><input type="checkbox" name="problem" value="{{ problem.id }}" checked="{{ problem in candidate.problems }}">{{ problem.name }}</li>
-        {% endfor %}
+      <div style="float: left; margin: 5px;">
+        Available problems:
+        <ul id="availableProblems" class="connectedSortable" style="height: 300px; width: 300px; border: 1px solid #ccc;">
+          {% for problem in all_problems %}
+            <li>{{ problem.name }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      
+      <div style="float: left; margin: 5px;" >
+        Assigned problems:<br/>
+        <ul id="assignedProblems" class="connectedSortable" style="height: 300px; width: 300px; border: 1px solid #ccc">
+        </ul>
+      </div>
+      <div style="clear: both;"></div>
 
         <input type="submit"/>
     </form>
     
   {% endif %}
+
+    
   
 {% endblock %}
