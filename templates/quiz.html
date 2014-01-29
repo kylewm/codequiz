@@ -38,8 +38,8 @@
       <hr/>
       <h3>{{ problem.name }}</h3>
       {{ problem.content | markdown  }}
-
-
+      
+      
       <form method="POST" action="{{ url_for('quiz_submit')}}">
         <input type="hidden" name="candidate" value="{{ candidate.id }}">
         <input type="hidden" name="problem" value="{{ problem.id }}">
@@ -47,6 +47,30 @@
         <input type="submit"/>
       </form>
 
+      <h4>Previous Submissions</h4>
+      {% for submission in candidate.submissions %}
+        {% if submission.problem_id == problem.id %}
+          <div class="submission">
+            <a href="#" onclick="toggleShowHide('submission-body-{{ loop.index }}'); return false;">submitted: {{ submission.time | moment }}</a>
+            <div id="submission-body-{{ loop.index }}" style="display:none;">
+              <pre>{{submission.content}}</pre>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+
+
+
+      
     {% endfor %}
+
+
+<script>
+  function toggleShowHide(id) {
+      var element = document.getElementById(id)
+      element.style.display = element.style.display == 'none' ? 'block' : 'none';
+  }
+</script>
+
     
 {% endblock %}

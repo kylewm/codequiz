@@ -307,7 +307,8 @@ def moment_filter(ts):
 
 
 def send_email(candidate, subject, text_body, html_body):
-    if candidate.notify_emails:
+    if (candidate.notify_emails and 'POSTMARK_API_KEY' in app.config
+        and app.config['POSTMARK_API_KEY']):
         msg = PMMail(api_key = app.config['POSTMARK_API_KEY'],
                      subject = subject,
                      sender = app.config['POSTMARK_SENDER'],
