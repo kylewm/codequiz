@@ -156,22 +156,29 @@ def candidate_view(candidate_id):
             candidate.notify_emails = request.form['notify_emails']
             candidate.problems = []
             problem_ids = request.form.getlist('problem')
-            idx = 0
+
             for problem_id in problem_ids:
                 selected_problem = Problem.query.\
                     filter(Problem.id == problem_id).\
                     one()
                 candidate.problems.append(selected_problem)
                 
-                db.session.execute(candidate_problems.update().\
-                                   where(candidate_problems.columns.problem_id==problem_id).\
-                                   where(candidate_problems.columns.candidate_id==candidate_id).\
-                                   values(position=idx))
-                idx += 1
                 
             if not candidate.id:
                 db.session.add(candidate)
+                
             db.session.commit()
+
+            idx = 0
+            for problem_id in problem_ids:
+                db.session.execute(candidate_problems.update().\
+                                   where(candidate_problems.columns.problem_id==problem_id).\
+                                   where(candidate_problems.columns.candidate_id==candidate.id).\
+                                   values(position=idx))
+                idx += 1
+
+            db.session.commit()
+            
             return redirect(url_for('candidate_view', candidate_id=candidate.id, action='view'))
 
         else:
