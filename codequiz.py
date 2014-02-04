@@ -2,7 +2,7 @@ import os, string, random, re, datetime
 from textwrap import dedent
 
 from flask import Flask, request, session, redirect, render_template, flash,\
-  url_for, _app_ctx_stack, abort, Markup
+  url_for, _app_ctx_stack, abort, Markup, make_response
 
 from flaskext.markdown import Markdown
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -68,7 +68,9 @@ class Submission(db.Model):
     problem_id  = db.Column(db.Integer, db.ForeignKey('problems.id'))
     problem = db.relationship('Problem')
 
-
+    def get_default_filename(self):
+        return (self.candidate.name + '-' + self.problem.name).lower().replace(' ', '_')
+    
     def __repr__(self):
         return "submission:{}->{}".format(self.candidate.name if self.candidate else "??",
                                           self.problem.name if self.problem else "??")
@@ -192,7 +194,18 @@ def candidate_view(candidate_id):
             flash('Deleted candidate {}'.format(candidate.name))
             return redirect(url_for('admin'))
 
+@app.route('/admin/submission/<int:submission_id>/<string:filename>')
+def download_submission(submission_id, filename):
+    submission = Submission.query.\
+                 filter(Submission.id == submission_id).\
+                 one()
 
+    if not submission:
+        return abort(404)
+
+    resp = make_response(submission.content, 200)
+    resp.headers['Content-Type'] = 'text/plain'
+    return resp
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def login():
@@ -298,7 +311,6 @@ def quiz_view(url_hash):
 def format_timestamp(ts):
     return ts.strftime("%Y-%m-%dT%H:%M:%S Z")
 
-
 @app.template_filter('moment')    
 def moment_filter(ts):
     if not ts:
@@ -311,7 +323,6 @@ def moment_filter(ts):
             var mo = moment("{}");
             document.write(mo.format("LLL") + ", " + mo.fromNow());
            </script>'''.format(ts_str)))
-
 
 def send_email(candidate, subject, text_body, html_body):
     if (candidate.notify_emails and 'POSTMARK_API_KEY' in app.config
