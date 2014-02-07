@@ -19,8 +19,11 @@
     <hr/>
 
     <h2>Candidates</h2>
+
+    {% for month in candidates_by_month | sort(reverse=True) %}
+    <h3>{{month}}</h3>
     <ul>
-      {% for candidate in candidates %}
+      {% for candidate in candidates_by_month[month] %}
         <li>
           {{ candidate.name }} &lt;{{ candidate.email }}&gt;
           <a href="/quiz/{{ candidate.url_hash }}">link to quiz</a><br/>
@@ -28,8 +31,9 @@
           <a href="{{ url_for('candidate_view', candidate_id=candidate.id, action='edit') }}">edit</a>
           <a href="{{ url_for('candidate_view', candidate_id=candidate.id, action='delete') }}">delete</a>
         </li>
-      {% endfor %}
+        {% endfor %}
     </ul>
+    {% endfor %}
 
     <a href="{{ url_for('candidate_view', candidate_id='new', action='edit') }}">new candidate</a>
   {% endif %}

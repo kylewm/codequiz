@@ -1,5 +1,6 @@
 import os, string, random, re, datetime
 from textwrap import dedent
+from collections import defaultdict
 
 from flask import Flask, request, session, redirect, render_template, flash,\
   url_for, _app_ctx_stack, abort, Markup, make_response
@@ -92,7 +93,17 @@ def admin():
     
     problems = Problem.query.order_by(Problem.name)
     candidates = Candidate.query.order_by(Candidate.name)
-    return render_template("admin.html", problems=problems, candidates=candidates)
+
+    candidates_by_month = defaultdict(list)
+    for candidate in candidates:
+        print candidate
+        if candidate.start_time:
+            month = "{}-{:02}".format(candidate.start_time.year, candidate.start_time.month)
+        else:
+            month = None
+        candidates_by_month[month].append(candidate)
+    
+    return render_template("admin.html", problems=problems, candidates=candidates, candidates_by_month=candidates_by_month)
 
 
 @app.route('/admin/problem/new', defaults={'problem_id': 'new'}, methods=['GET', 'POST'])
