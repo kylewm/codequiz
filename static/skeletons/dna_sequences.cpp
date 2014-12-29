@@ -15,9 +15,9 @@ std::string evaluate(std::vector<std::string>& sequences)
 int main(int argc, char** argv)
 {
         std::vector<std::string> sequences;
-        std::string input;
         while (!std::cin.eof())
         {
+	        std::string input;
                 std::cin >> input;
                 sequences.push_back(input);
         }
